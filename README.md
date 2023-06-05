@@ -1,0 +1,119 @@
+JDBC - Java Database Connectivity
+
+ -- it is an API to connect and execute the query with the database.
+ -- it uses the jdbc driver to talk with the database.
+ -- it is the middle link between java app and database to talk with each other.
+
+Steps to create the connection with the database
+ -- every database has its own jdbc driver which help to access the db from java
+         ex: mysql has its own driver, oracle has its own, mongodb has its own
+ -- We can say that "JDBC driver is database depended".
+ -- we need to give path of driver in the classpath for need to access it.
+
+ -- Steps
+ 1. Load the driver :-
+   -its load the driver into the memory in order to use it
+   -To load the driver there are two methods
+      i) Using Class named class ->
+         # Java has a class named `Class` it has a method named `forName` which take class class-name
+           as an argument in a string format and load into the memory `Class.forName("<driver_name>")`
+           the class name should be fully classified name along with its package.
+         # ex: for mysql the name of driver is Driver and this driver is available in a package named `com.mysql.jdbc.Driver`
+             Class.forName("com.mysql.jdbc.Driver")
+         # when the class is loading all the code written inside static block gets executed once driver is loaded
+           this might throw exception so we keep it under try catch block
+           try{
+               Class.forName("com.mysql.jdbc.Driver")
+             } catch(e){
+                 System.out.println("Error Occured "+e);
+             }
+      ii) Using Driver Manager class ->
+          # `DriverManager` it has a method called `registerDriver()`.
+          # The registerDriver method takes object of driver not the string.
+          # ex:
+                 DriverManager.registerDriver(new com.mysql.jdbc.Driver());
+
+   - You need to use only one method for loading the class
+
+ 2. Create a connection:-
+     - DriverManager has a static method called getConnection().
+     - getConnection returns a object of Connection type
+     - we need to import java.sql to get access of Connection class
+     - get connection takes 3 arguments as String format
+         Connection <obj_Name> = DriverManager.getConnection("url","username","password");
+         # url - url is different for each database you need to find it on internet about your db
+                for sql: "jdbc:mysql://<ip_address_of_db>:db_port/db_Name"
+                    (ip_address - where db is running if localhost type localhost)
+                    (portNo- for sql you can find on commandline client using `\s` command)
+     - ex: Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/studentData","root","root")
+     - everything got right and authenticated driverManager create connection and put it under the object
+       of Connection type which you can use it.
+
+ 3. Create query's :-
+         - Query can be 3 types
+             1. Statement  2. PreparedStatment 3. CallableStatement
+
+         - Statement : for simple query's, we need to create Statement obj.
+         - PreparedStatement : for complex and dynamic query's where we had question mark and incomplete
+                  query's, we need to create PreparedStatment obj.
+         - CallableStatement: for stored methods and procedure query's for methods and procedure which
+                stored over the db, we need to create CallableStatement obj.
+
+         - these three totally depend on the need.
+
+          - to execute the query we have three methods/functions
+                     1. executeQuery : when you are expecting the data means you have select type query.
+                              it has return type of ResultSet. it is type of interface which stores selected data
+                              like tables and all.
+                     2. executeUpdate : when you are not expecting any data like insert,delete,update.
+                             here return type is integer
+                     3. execute :
+
+         -ex: we have simple query String q = "select * from students";
+
+               Statement stmt = con.createStatement();
+
+               ResultSet  set = stmt.executeQuery(q);
+
+ 4. Process the data :-
+      - You need process the data with the help of ResultSet if the query fire type is executeQuery
+      - if it is DML where insert,update,delete happen there you don't need to process the data
+        only we need to fire executeUpdate query
+      - When we get the data back it is in the form of tables where we have the rows
+      - we need get the data from each row here we use loop to go through all the rows
+      - we don't know how many rows there in the result here we ask from `ResultSet` obj by using `next()`
+         next keep moving to the next row if there are and we can process the data
+      - while(set.next()){
+             // we need id then
+             int id = set.getInt(<column_no>);  // 1
+                     or
+             int id = set.getInt("<column_name>");
+             // wen need name
+             String name = set.getString(<column_no>);
+                     or
+             String name = set.getString("<column_name>");
+         }
+      - ex:
+              while(set.next()){
+                  // we need id then
+                  int id = set.getInt(1);
+                          or
+                  int id = set.getInt("studentId");
+                  // wen need name
+                  String name = set.getString(2);
+                          or
+                  String name = set.getString("studentName");
+              }
+
+ 5. Close the connection:-
+     - we need to close the connection after we done all the work
+     - we need use `close()` method to close the connection.
+     - <obj_name>.close();
+     -ex: con.close();
+
+
+-- for inserting the image you need to create a table into your database where the datatype should be `blob`
+-- `blob` can store upto 65kb size of image.
+-- for large image we need to use the `longblob`.
+-- if we store images into the database that will cause the increase of the size of db.
+-- we generally use the images by making them file
